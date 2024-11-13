@@ -62,8 +62,9 @@ df_crop_value = pd.melt(df_crop_value,
                             value_name = "gep")
 
 # Rental rate adjustment... Perhaps GTAP value of somewhere in the 0.25 range
+    # And make unit rate adjustment (1000)
 rental_rate = 0.25
-df_crop_value['gep'] = df_crop_value['gep'] * rental_rate
+df_crop_value['gep'] = df_crop_value['gep'] * rental_rate * 1000
 
 # CHECK: Summary Stats of avg year value by crop 
 
