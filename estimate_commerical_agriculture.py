@@ -15,6 +15,10 @@ import matplotlib.pyplot as plt
 df_crop_value = pd.read_csv("../data/faostat_value_agr_prod/Value_of_Production_E_All_Data.csv", encoding='ISO-8859-1')
 # Limit to International dollar values 
 df_crop_value = df_crop_value[df_crop_value['Unit'] == "1000 Int$"]
+# Load crop coefficients for resource rents from CWON 2024 report
+df1 = pd.read_csv('./CWON2024_crop_coef.csv', delimiter=';', encoding='utf-8')
+
+
 
 # Rename variables: 
 old_names = ["Area Code", "Area Code (M49)", "Area", "Item Code", 
@@ -65,10 +69,33 @@ df_crop_value = pd.melt(df_crop_value,
                             var_name = "year", 
                             value_name = "gep")
 
+# Rename columns for consistency
+df1.rename(columns={"ISO3": "alpha-3"}, inplace=True)
+
+# Reshape the decade columns into rows
+df1_melted = df1.melt(
+    id_vars=["Order", "FAO", "alpha-3", "Country/territory"],
+    var_name="Decade",
+    value_name="rental_rate"
+)
+
+# Extract the starting year of each decade
+df1_melted['Decade_start'] = df1_melted['Decade'].str.extract(r'(\d{4})').astype(int)
+
+# Match each year in the own consumption data to the corresponding decade
+df_crop_value = pd.merge(
+    df_crop_value, 
+    df1_melted, 
+    on="alpha-3", 
+    how="left"
+)
+df_crop_value = df_crop_value[df_crop_value['Year'] >= df_crop_value['Decade_start']]  # Filter to ensure year falls within the decade
+df_crop_value = df_crop_value.sort_values(['alpha-3', 'Year', 'Decade_start']).drop_duplicates(['alpha-3', 'Year'], keep='last')
+
 # Rental rate adjustment... Perhaps GTAP value of somewhere in the 0.25 range
     # And make unit rate adjustment (1000)
-rental_rate = 0.25
-df_crop_value['gep'] = df_crop_value['gep'] * rental_rate * 1000
+    # rental_rate = 0.25 #TODO: replace 
+df_crop_value['gep'] = df_crop_value['gep'] * df['rental_rate'] * 1000
 
 # CHECK: Summary Stats of avg year value by crop 
 
