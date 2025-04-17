@@ -5,7 +5,7 @@ import os
 import pandas as pd
 import matplotlib.pyplot as plt
 
-
+''''''
 def read_crop_values(path: str):
     df_crop_value = pd.read_csv(path, encoding="ISO-8859-1")
 
@@ -138,7 +138,6 @@ def merge_crop_with_coefs(df_crop_value: pd.DataFrame, df_crop_coefs: pd.DataFra
         )
         merged_parts.append(merged)
 
-
     # recombine everything
     df_crop_value = pd.concat(merged_parts, ignore_index=True)
     df_crop_value['gep'] = df_crop_value['gep'] * df_crop_value['rental_rate']
@@ -147,12 +146,9 @@ def merge_crop_with_coefs(df_crop_value: pd.DataFrame, df_crop_coefs: pd.DataFra
     return df_crop_value
 
 
-def plot_gep_years(
-    df: pd.DataFrame,
-    path: str,
-):
+def plot_gep_years(df: pd.DataFrame, path: str):
     plt.figure(figsize=(10, 6))
-    plt.plot(df.index, df["total_gep"], marker="o", linestyle="-")
+    plt.plot(df["year"], df["total_gep"], marker="o", linestyle="-")
     plt.title("Time Series of Commercial Agriculture (All Countries)")
     plt.xlabel("Year")
     plt.ylabel("GEP (1000 Int$)")
