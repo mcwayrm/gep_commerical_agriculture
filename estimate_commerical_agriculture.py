@@ -54,7 +54,8 @@ def read_crop_values(path: str):
                 "Meat of mules, fresh or chilled (indigenous)", "Meat of other domestic camelids, fresh or chilled (indigenous)", "Meat of pig with the bone, fresh or chilled (indigenous)",
                 "Meat of pigeons and other birds n.e.c., fresh, chilled or frozen (indigenous)", "Meat of rabbits and hares, fresh or chilled (indigenous)",
                 "Meat of sheep, fresh or chilled (indigenous)", "Meat of turkeys, fresh or chilled (indigenous)", "Milk, Total", "Non Food", "Oilcrops Primary", "Roots and Tubers, Total",
-                "Sugar Crops Primary", "Vegetables Primary", "Raw milk of buffalo", "Raw milk of camel", "Raw milk of cattle", "Raw milk of goats", "Raw milk of sheep","Shorn wool, greasy, including fleece-washed shorn wool", "Horse meat, fresh or chilled (indigenous)"]
+                "Sugar Crops Primary", "Vegetables Primary", "Raw milk of buffalo", "Raw milk of camel", "Raw milk of cattle", "Raw milk of goats", "Raw milk of sheep","Shorn wool, greasy, including fleece-washed shorn wool", 
+                "Horse meat, fresh or chilled (indigenous)", "Hen eggs in shell, fresh","Eggs from other birds in shell, fresh, n.e.c."]
     df_crop_value = df_crop_value[~df_crop_value["crop"].isin(drop_list)].copy()
 
     # drop unwanted countries (aggregates and currently nonexisting)
