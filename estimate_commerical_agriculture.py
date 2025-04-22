@@ -29,8 +29,11 @@ def read_crop_values(path: str):
         logging.error(f"Failed to read crop values file '{path}': {e}")
         raise
     
-    # keep only Int$ unit
-    df_crop_value = df_crop_value[df_crop_value["Unit"] == "1000 Int$"]
+    # keep only Int$ unit AND element code 57
+    df_crop_value = df_crop_value[
+    (df_crop_value["Unit"] == "1000 USD") &
+    (df_crop_value["Element Code"] == 57)
+    ].copy()
 
     # drop columns ending with F
     cols_to_drop = [col for col in df_crop_value.columns if col.endswith("F")]
@@ -193,7 +196,7 @@ def plot_gep_years(df: pd.DataFrame, path: str):
     plt.plot(df["year"], df["total_gep"], marker="o", linestyle="-")
     plt.title("Time Series of Commercial Agriculture (All Countries)")
     plt.xlabel("Year")
-    plt.ylabel("GEP (1000 Int$)")
+    plt.ylabel("GEP (1000 USD)")
     plt.xticks(rotation=45)
     plt.grid(True)
     plt.savefig(path, format="png")
@@ -213,7 +216,7 @@ def plot_countries_gep(df: pd.DataFrame, output_dir: str = "output2"):
         plt.plot(group_df["year"], group_df["gep"], marker="o")
         plt.title(f"GEP Time Series of Commercial Agriculture for {country}")
         plt.xlabel("Year")
-        plt.ylabel("GEP (1000 Int$)")
+        plt.ylabel("GEP (1000 USD)")
         plt.xticks(rotation=20)
         plt.grid(True)
         outfile = os.path.join(output_dir, f"{str(country).replace(' ', '_')}.png")
@@ -233,7 +236,7 @@ def plot_year_producers(df: pd.DataFrame, output_dir: str = "output2", n=10):
         plt.bar(labels, df_top["gep"])
         plt.title(f"Top {n} Commercial Agriculture Producers in {year}")
         plt.xlabel("Country")
-        plt.ylabel("GEP (1000 Int$)")
+        plt.ylabel("GEP (1000 USS)")
         plt.xticks(rotation=20)
         plt.grid(True)
         plt.savefig(
