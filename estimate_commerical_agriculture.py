@@ -200,7 +200,7 @@ def plot_gep_years(df: pd.DataFrame, path: str):
     plt.close()
     logging.info(f"Saved global plot to {path}.")
 
-def plot_countries_gep(df: pd.DataFrame, output_dir: str = "output"):
+def plot_countries_gep(df: pd.DataFrame, output_dir: str = "output2"):
     """
     One line plot per country.
     """
@@ -222,7 +222,7 @@ def plot_countries_gep(df: pd.DataFrame, output_dir: str = "output"):
     logging.info(f"Plotted {len(grouped)} countries")
 
 
-def plot_year_producers(df: pd.DataFrame, output_dir: str = "output", n=10):
+def plot_year_producers(df: pd.DataFrame, output_dir: str = "output2", n=10):
     os.makedirs(output_dir, exist_ok=True)
 
     for year in pd.unique(df["year"]):
@@ -244,7 +244,7 @@ def plot_year_producers(df: pd.DataFrame, output_dir: str = "output", n=10):
     logging.info(f"Plotted {len(pd.unique(df["year"]))} years charts.")
 
 
-def run(input_dir = "input", output_dir: str = "../output"):
+def run(input_dir = "input", output_dir: str = "../output2"):
     """
     Full pipeline: read, process, merge, aggregate, save CSVs and plots.
     """
@@ -252,7 +252,7 @@ def run(input_dir = "input", output_dir: str = "../output"):
     # 1. Read and process data
     logging.info("Reading csv data")
     try:
-        df_crop_value = read_crop_values(os.path.join(input_dir, "Value_of_Production_E_All_Data.csv"))
+        df_crop_value = read_crop_values(os.path.join(input_dir, "Value_of_Production_E_All_Data2.csv"))
         df_crop_coefs = read_crop_coefs(os.path.join(input_dir, "CWON2024_crop_coef.csv"))
     except Exception:
         logging.exception("Data loading failed—aborting.")
