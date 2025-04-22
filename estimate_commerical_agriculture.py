@@ -240,7 +240,7 @@ def plot_year_producers(df: pd.DataFrame, output_dir: str = "output", n=10):
             format="png",
         )
         plt.close()
-    logging.info(f"Plotted {len(pd.unique(df["year"]))} years charts.")
+    logging.info(f"Plotted {len(pd.unique(df['year']))} years charts.")
 
 
 def run(input_dir = "input", output_dir: str = "../output"):
