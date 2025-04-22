@@ -54,7 +54,8 @@ def read_crop_values(path: str):
                 "Meat of mules, fresh or chilled (indigenous)", "Meat of other domestic camelids, fresh or chilled (indigenous)", "Meat of pig with the bone, fresh or chilled (indigenous)",
                 "Meat of pigeons and other birds n.e.c., fresh, chilled or frozen (indigenous)", "Meat of rabbits and hares, fresh or chilled (indigenous)",
                 "Meat of sheep, fresh or chilled (indigenous)", "Meat of turkeys, fresh or chilled (indigenous)", "Milk, Total", "Non Food", "Oilcrops Primary", "Roots and Tubers, Total",
-                "Sugar Crops Primary", "Vegetables Primary", "Raw milk of buffalo", "Raw milk of camel", "Raw milk of cattle", "Raw milk of goats", "Raw milk of sheep"]
+                "Sugar Crops Primary", "Vegetables Primary", "Raw milk of buffalo", "Raw milk of camel", "Raw milk of cattle", "Raw milk of goats", "Raw milk of sheep","Shorn wool, greasy, including fleece-washed shorn wool", 
+                "Horse meat, fresh or chilled (indigenous)", "Hen eggs in shell, fresh","Eggs from other birds in shell, fresh, n.e.c."]
     df_crop_value = df_crop_value[~df_crop_value["crop"].isin(drop_list)].copy()
 
     # drop unwanted countries (aggregates and currently nonexisting)
@@ -199,7 +200,7 @@ def plot_gep_years(df: pd.DataFrame, path: str):
     plt.close()
     logging.info(f"Saved global plot to {path}.")
 
-def plot_countries_gep(df: pd.DataFrame, output_dir: str = "output"):
+def plot_countries_gep(df: pd.DataFrame, output_dir: str = "output2"):
     """
     One line plot per country.
     """
@@ -221,7 +222,7 @@ def plot_countries_gep(df: pd.DataFrame, output_dir: str = "output"):
     logging.info(f"Plotted {len(grouped)} countries")
 
 
-def plot_year_producers(df: pd.DataFrame, output_dir: str = "output", n=10):
+def plot_year_producers(df: pd.DataFrame, output_dir: str = "output2", n=10):
     os.makedirs(output_dir, exist_ok=True)
 
     for year in pd.unique(df["year"]):
@@ -243,7 +244,7 @@ def plot_year_producers(df: pd.DataFrame, output_dir: str = "output", n=10):
     logging.info(f"Plotted {len(pd.unique(df['year']))} years charts.")
 
 
-def run(input_dir = "input", output_dir: str = "../output"):
+def run(input_dir = "input", output_dir: str = "../output2"):
     """
     Full pipeline: read, process, merge, aggregate, save CSVs and plots.
     """
@@ -251,7 +252,7 @@ def run(input_dir = "input", output_dir: str = "../output"):
     # 1. Read and process data
     logging.info("Reading csv data")
     try:
-        df_crop_value = read_crop_values(os.path.join(input_dir, "Value_of_Production_E_All_Data.csv"))
+        df_crop_value = read_crop_values(os.path.join(input_dir, "Value_of_Production_E_All_Data2.csv"))
         df_crop_coefs = read_crop_coefs(os.path.join(input_dir, "CWON2024_crop_coef.csv"))
     except Exception:
         logging.exception("Data loading failed—aborting.")
