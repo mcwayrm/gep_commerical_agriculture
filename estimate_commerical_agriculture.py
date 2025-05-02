@@ -4,6 +4,7 @@
 import os
 import logging
 import pandas as pd
+import numpy as np
 import matplotlib.pyplot as plt
 
 # configure logging
@@ -124,6 +125,55 @@ def read_crop_coefs(path: str):
     df_crop_coefs = df_crop_coefs.rename(columns={"Decade_start": "year"})
     logging.info(f"Prepared coef lookup ({df_crop_coefs.shape[0]} rows).")
     return df_crop_coefs
+
+def load_price_data(path: str): 
+    """
+    Loads in the price data and handles potential encoding issues.
+    """
+    # Types of encoding
+    encodings = ['utf-8', 'ISO-8859-1', 'latin1']
+    # Attempt to open with different encodings
+    for encoding in encodings:
+        try:
+            df = pd.read_csv(path, encoding=encoding)
+            print(f"Successfully read price data with encoding: {encoding}")
+            break
+        except UnicodeDecodeError as e:
+            print(f"Failed to read price data with encoding {encoding}. Error: {e}")
+    # Quick check...
+    print(df.head())
+    # If none of the encodings work, raise an error
+    if 'df' not in locals():
+        raise ValueError("Unable to decode the price data file with tried encodings.")
+    # If file exists, return loaded data 
+    if 'df' in locals():
+        return df
+    
+def exchange_rate_conversion(df_crop_value: pd.DataFrame):
+    """
+    Convert crop values into USD.
+    """
+    # Path to exchange rate data
+    exchange_rates_data_path = os.path('.\input\wb-exchange-rates-usd.csv') # World Bank exchange rate annual averages: https://databank.worldbank.org/reports.aspx?dsid=2&series=PA.NUS.FCRF
+    # Load exchange rates data
+    df_exchange_rates = load_price_data(exchange_rates_data_path)
+    # Make the exchange rates long format
+    df_exchange_rates = pd.melt(df_exchange_rates, id_vars = ['Country Name', 'Country Code'],
+                                    var_name = 'year',
+                                    value_name = 'rate_to_usd')
+    # Remove everything in square brackets using regex
+    df_exchange_rates['year'] = df_exchange_rates['year'].str.replace(r'\s*\[.*?\]\s*', '', regex=True)
+    # Ensure variables are numeric
+    df_exchange_rates['rate_to_usd'] = pd.to_numeric(df_exchange_rates['rate_to_usd'], errors='coerce')
+    df_exchange_rates['year'] = pd.to_numeric(df_exchange_rates['year'], errors='coerce')
+
+    # Merge in exchange rate data Match with 'Country Code' ISO 3 codes (year)
+    df_crop_value = pd.merge(df_crop_value, df_exchange_rates, 
+                            how = 'left', on = ['year', 'country'])
+    # Exchange rate to USD
+    df_crop_value['gep'] = np.where(df_crop_value['Element Code'].isin([5530, 5531]), 
+                                                df_crop_value['gep'] / df_crop_value['rate_to_usd'], 
+                                                df_crop_value['gep'])
 
 
 def merge_crop_with_coefs(df_crop_value: pd.DataFrame, df_crop_coefs: pd.DataFrame):
@@ -257,6 +307,9 @@ def run(input_dir = "input", output_dir: str = "../output2"):
     except Exception:
         logging.exception("Data loading failed—aborting.")
         return
+    
+    # 1.5 Convert crop values to USD 
+    df_crop_value = exchange_rate_conversion(df_crop_value)
     
     # 2. Merge data
     logging.info("Merging dataframes")
