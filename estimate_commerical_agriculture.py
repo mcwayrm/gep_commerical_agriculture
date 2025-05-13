@@ -32,8 +32,8 @@ def read_crop_values(path: str):
     
     # keep only Int$ unit AND element code 57
     df_crop_value = df_crop_value[
-    (df_crop_value["Unit"] == "1000 USD") &
-    (df_crop_value["Element Code"] == 57)
+    (df_crop_value["Unit"] == "1000 Int$") &
+    (df_crop_value["Element Code"] == 152)
     ].copy()
 
     # drop columns ending with F
@@ -51,16 +51,27 @@ def read_crop_values(path: str):
     rename_dict = dict(zip(old_names, new_names))
     df_crop_value.rename(columns=rename_dict, inplace=True)
 
-    # drop unwanted crops (e.g. aggregates)
-    drop_list = ["Vegetables and Fruit Primary", "Agriculture", "Cereals, primary", "Crops", "Fibre Crops Primary", "Food", "Fruit Primary", "Livestock", "Meat indigenous, total", "Meat of asses, fresh or chilled (indigenous",
-                "Meat of buffalo, fresh or chilled (indigenous)", "Meat of camels, fresh or chilled (indigenous)", "Meat of camels, fresh or chilled (indigenous)", "Meat of cattle with the bone, fresh or chilled (indigenous)",
-                "Meat of chickens, fresh or chilled (indigenous)", "Meat of ducks, fresh or chilled (indigenous)", "Meat of geese, fresh or chilled (indigenous)", "Meat of goat, fresh or chilled (indigenous)",
-                "Meat of mules, fresh or chilled (indigenous)", "Meat of other domestic camelids, fresh or chilled (indigenous)", "Meat of pig with the bone, fresh or chilled (indigenous)",
-                "Meat of pigeons and other birds n.e.c., fresh, chilled or frozen (indigenous)", "Meat of rabbits and hares, fresh or chilled (indigenous)",
-                "Meat of sheep, fresh or chilled (indigenous)", "Meat of turkeys, fresh or chilled (indigenous)", "Milk, Total", "Non Food", "Oilcrops Primary", "Roots and Tubers, Total",
-                "Sugar Crops Primary", "Vegetables Primary", "Raw milk of buffalo", "Raw milk of camel", "Raw milk of cattle", "Raw milk of goats", "Raw milk of sheep","Shorn wool, greasy, including fleece-washed shorn wool", 
-                "Horse meat, fresh or chilled (indigenous)", "Hen eggs in shell, fresh","Eggs from other birds in shell, fresh, n.e.c."]
-    df_crop_value = df_crop_value[~df_crop_value["crop"].isin(drop_list)].copy()
+    # Define separate drop lists
+    aggregate_drop_list = [
+        "Vegetables and Fruit Primary", "Agriculture", "Cereals, primary", "Crops", "Vegetables Primary",
+        "Fibre Crops Primary", "Food", "Fruit Primary", "Livestock","Milk, Total", "Meat indigenous, total"        
+    ]
+    # #meat_eggs_drop_list = [
+    #     "Meat of asses, fresh or chilled (indigenous)", "Meat of buffalo, fresh or chilled (indigenous)", "Meat of camels, fresh or chilled (indigenous)",
+    #     "Meat of chickens, fresh or chilled (indigenous)", "Meat of ducks, fresh or chilled (indigenous)",
+    #     "Meat of geese, fresh or chilled (indigenous)", "Meat of goat, fresh or chilled (indigenous)",
+    #     "Meat of mules, fresh or chilled (indigenous)", "Meat of other domestic camelids, fresh or chilled (indigenous)",
+    #     "Meat of pig with the bone, fresh or chilled (indigenous)", "Meat of pigeons and other birds n.e.c., fresh, chilled or frozen (indigenous)",
+    #     "Meat of rabbits and hares, fresh or chilled (indigenous)", "Meat of sheep, fresh or chilled (indigenous)",
+    #     "Meat of turkeys, fresh or chilled (indigenous)", "Horse meat, fresh or chilled (indigenous)",
+    #     "Hen eggs in shell, fresh", "Eggs from other birds in shell, fresh, n.e.c.", "Game meat, fresh, chilled or frozen",
+    #     "Meat of cattle with the bone, fresh or chilled","Meat of chickens, fresh or chilled", "Meat of goat, fresh or chilled","Meat of pig with the bone, fresh or chilled",
+    #     "Meat of sheep, fresh or chilled","Meat of turkeys, fresh or chilled", "Meat of camels, fresh or chilled","Horse meat, fresh or chilled","Meat of rabbits and hares, fresh or chilled",
+    #     "Natural honey","Other meat n.e.c. (excluding mammals), fresh, chilled or frozen"]
+
+    # Drop unwanted crops (both aggregate and meat/eggs)
+    df_crop_value = df_crop_value[~df_crop_value["crop"].isin(aggregate_drop_list)].copy()
+    #df_crop_value = df_crop_value[~df_crop_value["crop"].isin(meat_eggs_drop_list)].copy()
 
     # drop unwanted countries (aggregates and currently nonexisting)
     countries_to_drop = [
@@ -152,31 +163,31 @@ def load_price_data(path: str):
     if 'df' in locals():
         return df
     
-def exchange_rate_conversion(df_crop_value: pd.DataFrame):
-    """
-    Convert crop values into USD.
-    """
-    # Path to exchange rate data
-    exchange_rates_data_path = os.path('.\input\wb-exchange-rates-usd.csv') # World Bank exchange rate annual averages: https://databank.worldbank.org/reports.aspx?dsid=2&series=PA.NUS.FCRF
-    # Load exchange rates data
-    df_exchange_rates = load_price_data(exchange_rates_data_path)
-    # Make the exchange rates long format
-    df_exchange_rates = pd.melt(df_exchange_rates, id_vars = ['Country Name', 'Country Code'],
-                                    var_name = 'year',
-                                    value_name = 'rate_to_usd')
-    # Remove everything in square brackets using regex
-    df_exchange_rates['year'] = df_exchange_rates['year'].str.replace(r'\s*\[.*?\]\s*', '', regex=True)
-    # Ensure variables are numeric
-    df_exchange_rates['rate_to_usd'] = pd.to_numeric(df_exchange_rates['rate_to_usd'], errors='coerce')
-    df_exchange_rates['year'] = pd.to_numeric(df_exchange_rates['year'], errors='coerce')
+# #def exchange_rate_conversion(df_crop_value: pd.DataFrame):
+#     """
+#     Convert crop values into USD.
+#     """
+#     # Path to exchange rate data
+#     exchange_rates_data_path = os.path.join('./input', 'wb-exchange-rates-usd.csv') # World Bank exchange rate annual averages: https://databank.worldbank.org/reports.aspx?dsid=2&series=PA.NUS.FCRF
+#     # Load exchange rates data
+#     df_exchange_rates = load_price_data(exchange_rates_data_path)
+#     # Make the exchange rates long format
+#     df_exchange_rates = pd.melt(df_exchange_rates, id_vars = ['Country Name', 'Country Code'],
+#                                     var_name = 'year',
+#                                     value_name = 'rate_to_usd')
+#     # Remove everything in square brackets using regex
+#     df_exchange_rates['year'] = df_exchange_rates['year'].str.replace(r'\s*\[.*?\]\s*', '', regex=True)
+#     # Ensure variables are numeric
+#     df_exchange_rates['rate_to_usd'] = pd.to_numeric(df_exchange_rates['rate_to_usd'], errors='coerce')
+#     df_exchange_rates['year'] = pd.to_numeric(df_exchange_rates['year'], errors='coerce')
 
-    # Merge in exchange rate data Match with 'Country Code' ISO 3 codes (year)
-    df_crop_value = pd.merge(df_crop_value, df_exchange_rates, 
-                            how = 'left', on = ['year', 'country'])
-    # Exchange rate to USD
-    df_crop_value['gep'] = np.where(df_crop_value['Element Code'].isin([5530, 5531]), 
-                                                df_crop_value['gep'] / df_crop_value['rate_to_usd'], 
-                                                df_crop_value['gep'])
+#     # Merge in exchange rate data Match with 'Country Code' ISO 3 codes (year)
+#     df_crop_value = pd.merge(df_crop_value, df_exchange_rates, 
+#                             how = 'left', on = ['year', 'country'])
+#     # Exchange rate to USD
+#     df_crop_value['gep'] = np.where(df_crop_value['Element Code'].isin([5530, 5531]), 
+#                                                 df_crop_value['gep'] / df_crop_value['rate_to_usd'], 
+#                                                 df_crop_value['gep'])
 
 
 def merge_crop_with_coefs(df_crop_value: pd.DataFrame, df_crop_coefs: pd.DataFrame):
@@ -246,7 +257,7 @@ def plot_gep_years(df: pd.DataFrame, path: str):
     plt.plot(df["year"], df["total_gep"], marker="o", linestyle="-")
     plt.title("Time Series of Commercial Agriculture (All Countries)")
     plt.xlabel("Year")
-    plt.ylabel("GEP (1000 USD)")
+    plt.ylabel("GEP (1000 Int$)")
     plt.xticks(rotation=45)
     plt.grid(True)
     plt.savefig(path, format="png")
@@ -266,7 +277,7 @@ def plot_countries_gep(df: pd.DataFrame, output_dir: str = "output2"):
         plt.plot(group_df["year"], group_df["gep"], marker="o")
         plt.title(f"GEP Time Series of Commercial Agriculture for {country}")
         plt.xlabel("Year")
-        plt.ylabel("GEP (1000 USD)")
+        plt.ylabel("GEP (1000 Int$)")
         plt.xticks(rotation=20)
         plt.grid(True)
         outfile = os.path.join(output_dir, f"{str(country).replace(' ', '_')}.png")
@@ -310,9 +321,8 @@ def run(input_dir = "input", output_dir: str = "../output2"):
     except Exception:
         logging.exception("Data loading failed—aborting.")
         return
-    
     # 1.5 Convert crop values to USD 
-    df_crop_value = exchange_rate_conversion(df_crop_value)
+    #df_crop_value = exchange_rate_conversion(df_crop_value)
     
     # 2. Merge data
     logging.info("Merging dataframes")
