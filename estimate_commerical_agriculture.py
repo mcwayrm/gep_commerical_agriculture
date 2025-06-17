@@ -32,8 +32,8 @@ def read_crop_values(path: str):
     
     # keep only Int$ unit AND element code 57
     df_crop_value = df_crop_value[
-    (df_crop_value["Unit"] == "1000 Int$") &
-    (df_crop_value["Element Code"] == 152)
+    (df_crop_value["Unit"] == "1000 USD") &
+    (df_crop_value["Element Code"] == 57)
     ].copy()
 
     # drop columns ending with F
@@ -52,13 +52,13 @@ def read_crop_values(path: str):
     df_crop_value.rename(columns=rename_dict, inplace=True)
 
     # Filter only for "Agriculture" crop type for all countries
-    df_crop_value = df_crop_value[df_crop_value["crop"] == "Agriculture"].copy()
+    #df_crop_value = df_crop_value[df_crop_value["crop"] == "Agriculture"].copy()
 
     # Define separate drop lists
-    # aggregate_drop_list = [
-    #     "Vegetables and Fruit Primary", "Agriculture", "Cereals, primary", "Crops", "Vegetables Primary",
-    #     "Fibre Crops Primary", "Food", "Fruit Primary", "Livestock","Milk, Total", "Meat indigenous, total"        
-    # ]
+    aggregate_drop_list = [
+    "Vegetables and Fruit Primary", "Agriculture", "Cereals, primary", "Crops", "Vegetables Primary",
+    "Fibre Crops Primary", "Food", "Fruit Primary", "Livestock","Milk, Total", "Meat indigenous, total"        
+    ]
     # #meat_eggs_drop_list = [
     #     "Meat of asses, fresh or chilled (indigenous)", "Meat of buffalo, fresh or chilled (indigenous)", "Meat of camels, fresh or chilled (indigenous)",
     #     "Meat of chickens, fresh or chilled (indigenous)", "Meat of ducks, fresh or chilled (indigenous)",
@@ -73,7 +73,7 @@ def read_crop_values(path: str):
     #     "Natural honey","Other meat n.e.c. (excluding mammals), fresh, chilled or frozen"]
 
     # Drop unwanted crops (both aggregate and meat/eggs)
-    #df_crop_value = df_crop_value[~df_crop_value["crop"].isin(aggregate_drop_list)].copy()
+    df_crop_value = df_crop_value[~df_crop_value["crop"].isin(aggregate_drop_list)].copy()
     #df_crop_value = df_crop_value[~df_crop_value["crop"].isin(meat_eggs_drop_list)].copy()
 
     # drop unwanted countries (aggregates and currently nonexisting)
