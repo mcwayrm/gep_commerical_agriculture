@@ -261,7 +261,7 @@ def plot_gep_years(df: pd.DataFrame, path: str):
     plt.plot(df["year"], df["total_gep"], marker="o", linestyle="-")
     plt.title("Time Series of Commercial Agriculture (All Countries)")
     plt.xlabel("Year")
-    plt.ylabel("GEP (1000 Int$)")
+    plt.ylabel("GEP (1000 USD)")
     plt.xticks(rotation=45)
     plt.grid(True)
     plt.savefig(path, format="png")
@@ -281,7 +281,7 @@ def plot_countries_gep(df: pd.DataFrame, output_dir: str = "output2"):
         plt.plot(group_df["year"], group_df["gep"], marker="o")
         plt.title(f"GEP Time Series of Commercial Agriculture for {country}")
         plt.xlabel("Year")
-        plt.ylabel("GEP (1000 Int$)")
+        plt.ylabel("GEP (1000 USD)")
         plt.xticks(rotation=20)
         plt.grid(True)
         outfile = os.path.join(output_dir, f"{str(country).replace(' ', '_')}.png")
@@ -312,7 +312,7 @@ def plot_year_producers(df: pd.DataFrame, output_dir: str = "output2", n=10):
     logging.info(f"Plotted {len(pd.unique(df['year']))} years charts.")
 
 
-def run(input_dir = "input", output_dir: str = "../output2"):
+def run(input_dir = "input", output_dir: str = "../output3"):
     """
     Full pipeline: read, process, merge, aggregate, save CSVs and plots.
     """
