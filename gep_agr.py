@@ -75,6 +75,7 @@ def read_crop_values(path: str, items):
         "European Union (27)",
         "Least Developed Countries",
         "Land Locked Developing Countries",
+        "Low Income Food Deficit Countries",
         "Small Island Developing States",
         "Czechoslovakia" "Low Income Food Deficit Countries",
         "Net Food Importing Developing Countries",
