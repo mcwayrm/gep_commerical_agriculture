@@ -25,7 +25,7 @@ def read_crop_values(path: str, items):
 
     # keep only Int$ unit AND element code 57
     df_crop_value = df_crop_value[(df_crop_value["Unit"] == "1000 USD") & (df_crop_value["Element Code"] == 57)].copy()
-
+    
     # drop columns ending with F
     cols_to_drop = [col for col in df_crop_value.columns if col.endswith("F")]
     df_crop_value.drop(columns=cols_to_drop, inplace=True)
@@ -37,6 +37,21 @@ def read_crop_values(path: str, items):
     rename_dict = dict(zip(old_names, new_names))
     df_crop_value.rename(columns=rename_dict, inplace=True)
 
+
+    # clean area_code_M49
+    df_crop_value['area_code_M49'] = df_crop_value['area_code_M49'].str.replace('\'', '')
+    df_crop_value['area_code_M49'] = df_crop_value['area_code_M49'].astype(int)
+    replacements = {
+            159: 156,  # China
+            891: 688,  # Serbia and Montenegro
+            200: 203,  # Czechoslovakia
+            230: 231,  # Ethiopia PDR
+            736: 729,  # Sudan (former)     
+        }
+        
+    # Replace wrong codes in the m49
+    df_crop_value['area_code_M49'] = df_crop_value['area_code_M49'].replace(replacements)    
+        
     # Keep only listed items
     df_crop_value = df_crop_value[df_crop_value["crop"].isin(items)].copy()
 
@@ -77,7 +92,7 @@ def read_crop_values(path: str, items):
         "Land Locked Developing Countries",
         "Low Income Food Deficit Countries",
         "Small Island Developing States",
-        "Czechoslovakia" "Low Income Food Deficit Countries",
+        "Czechoslovakia", "Low Income Food Deficit Countries",
         "Net Food Importing Developing Countries",
         "China, Hong Kong SAR",
         "China, mainland",
@@ -87,16 +102,18 @@ def read_crop_values(path: str, items):
     ]
     df_crop_value = df_crop_value[~df_crop_value["country"].isin(countries_to_drop)]
     logging.info(f"Finished cleaning up ({df_crop_value.shape[0]} rows).")
-
+    
     # reshape to long format
     df_crop_value = pd.melt(
         df_crop_value,
-        id_vars=["area_code", "country", "crop_code", "crop"],
+        id_vars=["area_code", "country", "crop_code", "crop", "area_code_M49"], 
         value_vars=[str(year) for year in range(1961, 2023)],  # 1961–2022
         var_name="year",
         value_name="gep",
     )
-
+    
+    df_crop_value["gep"] = df_crop_value["gep"] * 1000  # Convert unit 1000 USD -> 1 USD
+    
     # ensure area_code and year are ints
     df_crop_value["area_code"] = pd.to_numeric(df_crop_value["area_code"], errors="coerce").astype(int)
     df_crop_value["year"] = pd.to_numeric(df_crop_value["year"], errors="coerce").astype(int)
@@ -175,6 +192,8 @@ def merge_crop_with_coefs(df_crop_value: pd.DataFrame, df_crop_coefs: pd.DataFra
     df_crop_value["gep"] = df_crop_value["gep"] * df_crop_value["rental_rate"]
     df_crop_value = df_crop_value.sort_values(by=["area_code", "year"], ascending=[True, True])
     logging.info(f"Merged values + coefs ({df_crop_value.shape[0]} rows).")
+    
+
     return df_crop_value
 
 
@@ -182,7 +201,7 @@ def group_crops(df: pd.DataFrame):
     """
     Aggregate adjusted GEP by country-year.
     """
-    df_gep_by_year_country = df.groupby(["area_code", "country", "year"], as_index=False).agg(gep=("gep", "sum"))
+    df_gep_by_year_country = df.groupby(["area_code", "country", "year", "area_code_M49"], as_index=False).agg(gep=("gep", "sum"))
     df_gep_by_year_country = df_gep_by_year_country.sort_values(by=["area_code", "year"], ascending=[True, True])
     df_gep_by_year_country["gep"] = pd.to_numeric(df_gep_by_year_country["gep"], errors="coerce")
     logging.info(f"Grouped by country-year ({df_gep_by_year_country.shape[0]} rows).")
@@ -219,4 +238,4 @@ def calculate(input_dir="input", items: list = gep_agr_defaults.DEFAULT_CROP_ITE
 
 
 if __name__ == "__main__":
-    (df_gep_by_country_year_crop, df_gep_by_year_country, df_gep_by_year) = calculate("input")
+    (df_gep_by_year, df_gep_by_year_country, df_gep_by_country_year_crop) = calculate("input")
